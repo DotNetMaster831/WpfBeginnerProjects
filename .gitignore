@@ -416,3 +416,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Ignore build / installer output folder
+application/
+
+# Ignore documentation folder
+WpfBeginnerProjects_Doc/
