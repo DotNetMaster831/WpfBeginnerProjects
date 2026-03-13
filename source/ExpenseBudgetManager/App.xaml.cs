@@ -13,14 +13,29 @@ namespace ExpenseBudgetManager
     /// </summary>
     public partial class App : Application
     {
-        private readonly ILoggerService _logger;
+        private ILoggerService? _logger;
 
         protected override void OnStartup(StartupEventArgs e)
         {
             //step -1 configure serilog
-            
 
 
+            // ── Step 1: Configure Serilog FIRST before anything else
+            ConfigureSerilog();
+
+            _logger = new SerilogLoggerService();
+            _logger.LogInformation("========================================");
+            _logger.LogInformation("Expense Budget Manager starting up...");
+            _logger.LogInformation($"Machine: {Environment.MachineName}");
+            _logger.LogInformation($"OS: {Environment.OSVersion}");
+            _logger.LogInformation($".NET: {Environment.Version}");
+            _logger.LogInformation("========================================");
+
+            // ← Add this line
+            Infrastructure.ServiceLocator.Initialize();
+
+            // ── Step 2: Wire up global exception handlers
+            WireExceptionHandlers();
             base.OnStartup(e);
         }
 
