@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:ExpenseBudgetManager"
              xmlns:vm="clr-namespace:ExpenseBudgetManager.ViewModels"
              xmlns:v="clr-namespace:ExpenseBudgetManager.Views"
+             xmlns:conv="clr-namespace:ExpenseBudgetManager.Converters"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -33,6 +34,12 @@
             <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
                 <v:SettingsView/>
             </DataTemplate>
+
+            <!-- Inside ResourceDictionary after MergedDictionaries closing tag -->
+            <conv:AmountToColorConverter       x:Key="AmountToColor"/>
+            <conv:CurrencyFormatConverter      x:Key="CurrencyFormat"/>
+            <conv:TransactionTypeToColorConverter x:Key="TypeToColor"/>
+            <conv:NullToVisibilityConverter    x:Key="NullToVisibility"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
