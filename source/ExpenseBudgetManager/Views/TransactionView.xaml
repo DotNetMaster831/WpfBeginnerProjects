@@ -5,21 +5,409 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ExpenseBudgetManager.Views"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:models="clr-namespace:ExpenseBudgetManager.Models"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <StackPanel HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-            <md:PackIcon Kind="SwapHorizontal"
-                         Width="48" Height="48"
-                         Foreground="{StaticResource AccentBrush}"
-                         HorizontalAlignment="Center"/>
-            <TextBlock Text="Transactions"
-                       Style="{StaticResource TitleTextStyle}"
-                       HorizontalAlignment="Center"/>
-            <TextBlock Text="Coming in Phase 6"
-                       Style="{StaticResource MutedTextStyle}"
-                       HorizontalAlignment="Center"/>
-        </StackPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <!-- Form panel slides in -->
+            <ColumnDefinition>
+                <ColumnDefinition.Style>
+                    <Style TargetType="ColumnDefinition">
+                        <Setter Property="Width" Value="0"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsFormVisible}"
+                                         Value="True">
+                                <Setter Property="Width" Value="320"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ColumnDefinition.Style>
+            </ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <!-- ═══ LEFT — Main list ═══ -->
+        <DockPanel Grid.Column="0" Margin="0,0,12,0">
+
+            <!-- Toolbar -->
+            <Border DockPanel.Dock="Top"
+                    Margin="0,0,0,14">
+                <DockPanel>
+
+                    <!-- Add button -->
+                    <Button DockPanel.Dock="Left"
+                            Command="{Binding ShowAddFormCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <md:PackIcon Kind="Plus" Width="16" Height="16"
+                                         VerticalAlignment="Center"/>
+                            <TextBlock Text="Add Transaction"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Search box -->
+                    <Border DockPanel.Dock="Right"
+                            Background="{StaticResource CardBgBrush}"
+                            CornerRadius="{StaticResource MediumRadius}"
+                            BorderBrush="{StaticResource DividerBrush}"
+                            BorderThickness="1"
+                            Padding="10,0"
+                            Width="220">
+                        <StackPanel Orientation="Horizontal">
+                            <md:PackIcon Kind="Magnify"
+                                         Width="15" Height="15"
+                                         Foreground="{StaticResource TextMutedBrush}"
+                                         VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding SearchText,
+                                             UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     CaretBrush="{StaticResource AccentBrush}"
+                                     FontSize="13"
+                                     Width="160"
+                                     VerticalAlignment="Center">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Style.Triggers>
+                                            <Trigger Property="Text" Value="">
+                                                <Setter Property="ToolTip"
+                                                        Value="Search transactions..."/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                        </StackPanel>
+                    </Border>
+
+                </DockPanel>
+            </Border>
+
+            <!-- Filter bar -->
+            <Border DockPanel.Dock="Top" Margin="0,0,0,14">
+                <DockPanel>
+
+                    <!-- Type pills -->
+                    <ListBox DockPanel.Dock="Left"
+                             ItemsSource="{Binding TypeFilters}"
+                             SelectedItem="{Binding SelectedTypeFilter,
+                                            Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem"
+                                   BasedOn="{StaticResource FilterPillStyle}"/>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+
+                    <!-- Clear filters -->
+                    <Button DockPanel.Dock="Right"
+                            Command="{Binding ClearFiltersCommand}"
+                            Style="{StaticResource GhostButtonStyle}"
+                            Padding="10,5" FontSize="11"
+                            Margin="8,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <md:PackIcon Kind="FilterRemove"
+                                         Width="14" Height="14"
+                                         VerticalAlignment="Center"/>
+                            <TextBlock Text="Clear" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Month filter -->
+                    <ComboBox DockPanel.Dock="Right"
+                              ItemsSource="{Binding MonthFilters}"
+                              SelectedItem="{Binding SelectedMonthFilter,
+                                             Mode=TwoWay}"
+                              Style="{StaticResource InputComboStyle}"
+                              Width="120" Margin="8,0,0,0"/>
+
+                    <!-- Category filter -->
+                    <ComboBox DockPanel.Dock="Right"
+                              ItemsSource="{Binding CategoryFilters}"
+                              SelectedItem="{Binding SelectedCategoryFilter,
+                                             Mode=TwoWay}"
+                              Style="{StaticResource InputComboStyle}"
+                              Width="140" Margin="8,0,0,0"/>
+
+                </DockPanel>
+            </Border>
+
+            <!-- Summary strip -->
+            <Border DockPanel.Dock="Top"
+                    Background="{StaticResource CardBgBrush}"
+                    CornerRadius="{StaticResource MediumRadius}"
+                    Padding="16,10"
+                    Margin="0,0,0,14">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Left"
+                                Orientation="Horizontal">
+                        <md:PackIcon Kind="FormatListBulleted"
+                                     Width="14" Height="14"
+                                     Foreground="{StaticResource TextMutedBrush}"
+                                     VerticalAlignment="Center"/>
+                        <TextBlock FontSize="12"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding TotalCount,
+                                          StringFormat='{}{0} transactions'}"/>
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Right"
+                                Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Income:"
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextMutedBrush}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource IncomeBrush}"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding FilteredIncome,
+                                              StringFormat='₹{0:N2}'}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Expense:"
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextMutedBrush}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ExpenseBrush}"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding FilteredExpense,
+                                              StringFormat='₹{0:N2}'}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- Transaction DataGrid -->
+            <Border DockPanel.Dock="Top"
+                    Style="{StaticResource CardStyle}"
+                    Padding="0">
+                <DataGrid ItemsSource="{Binding TransactionsView}"
+                          Style="{StaticResource AppDataGridStyle}"
+                          ColumnHeaderStyle="{StaticResource AppDataGridColumnHeaderStyle}"
+                          RowStyle="{StaticResource AppDataGridRowStyle}">
+
+                    <DataGrid.Columns>
+
+                        <!-- Date -->
+                        <DataGridTextColumn Header="DATE"
+                            Binding="{Binding Date, StringFormat='dd MMM yyyy'}"
+                            Width="110"
+                            ElementStyle="{StaticResource MutedTextStyle}"/>
+
+                        <!-- Title -->
+                        <DataGridTextColumn Header="TITLE"
+                            Binding="{Binding Title}"
+                            Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground"
+                                            Value="{StaticResource TextPrimaryBrush}"/>
+                                    <Setter Property="FontWeight"
+                                            Value="SemiBold"/>
+                                    <Setter Property="VerticalAlignment"
+                                            Value="Center"/>
+                                    <Setter Property="Margin"
+                                            Value="14,0"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Category -->
+                        <DataGridTextColumn Header="CATEGORY"
+                            Binding="{Binding Category}"
+                            Width="130"
+                            ElementStyle="{StaticResource MutedTextStyle}"/>
+
+                        <!-- Amount -->
+                        <DataGridTemplateColumn Header="AMOUNT" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:Transaction}">
+                                    <TextBlock Text="{Binding AmountDisplay}"
+                                               FontWeight="Bold"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"
+                                               Margin="14,0"
+                                               Foreground="{Binding Type,
+                                                   Converter={StaticResource TypeToColor}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Actions -->
+                        <DataGridTemplateColumn Header="" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:Transaction}">
+                                    <StackPanel Orientation="Horizontal"
+                                                HorizontalAlignment="Center">
+                                        <!-- Edit -->
+                                        <Button Style="{StaticResource IconButtonStyle}"
+                                                Command="{Binding DataContext.EditCommand,
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="Edit">
+                                            <md:PackIcon Kind="Pencil"
+                                                         Width="15" Height="15"
+                                                         Foreground="{StaticResource AccentBrush}"/>
+                                        </Button>
+                                        <!-- Delete -->
+                                        <Button Style="{StaticResource IconButtonStyle}"
+                                                Command="{Binding DataContext.DeleteCommand,
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="Delete">
+                                            <md:PackIcon Kind="Delete"
+                                                         Width="15" Height="15"
+                                                         Foreground="{StaticResource DangerBrush}"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+        </DockPanel>
+
+        <!-- ═══ RIGHT — Add/Edit Form Panel ═══ -->
+        <Border Grid.Column="1"
+                Background="{StaticResource CardBgBrush}"
+                BorderBrush="{StaticResource DividerBrush}"
+                BorderThickness="1,0,0,0"
+                Padding="20">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsFormVisible}"
+                                     Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
+            <DockPanel>
+
+                <!-- Form header -->
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+                    <TextBlock Text="{Binding FormTitle}"
+                               Style="{StaticResource SubtitleTextStyle}"
+                               FontSize="16"/>
+                    <Button DockPanel.Dock="Right"
+                            Command="{Binding CancelCommand}"
+                            Style="{StaticResource IconButtonStyle}">
+                        <md:PackIcon Kind="Close" Width="18" Height="18"
+                                     Foreground="{StaticResource TextMutedBrush}"/>
+                    </Button>
+                </DockPanel>
+
+                <!-- Save / Cancel buttons at bottom -->
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
+
+                    <!-- Error message -->
+                    <TextBlock Text="{Binding FormError}"
+                               Foreground="{StaticResource DangerBrush}"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Visibility="{Binding FormError,
+                                   Converter={StaticResource NullToVisibility}}"/>
+
+                    <Button Content="Save Transaction"
+                            Command="{Binding SaveCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            HorizontalAlignment="Stretch"/>
+
+                    <Button Content="Cancel"
+                            Command="{Binding CancelCommand}"
+                            Style="{StaticResource GhostButtonStyle}"
+                            HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <!-- Form fields -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+
+                        <!-- Title -->
+                        <StackPanel>
+                            <TextBlock Text="TITLE"
+                                       Style="{StaticResource LabelTextStyle}"/>
+                            <TextBox Text="{Binding FormTitleField,
+                                             UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource InputStyle}"
+                                     MaxLength="100"/>
+                        </StackPanel>
+
+                        <!-- Amount -->
+                        <StackPanel>
+                            <TextBlock Text="AMOUNT (₹)"
+                                       Style="{StaticResource LabelTextStyle}"/>
+                            <TextBox Text="{Binding FormAmount,
+                                             UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource InputStyle}"/>
+                        </StackPanel>
+
+                        <!-- Type -->
+                        <StackPanel>
+                            <TextBlock Text="TYPE"
+                                       Style="{StaticResource LabelTextStyle}"/>
+                            <ComboBox ItemsSource="{Binding TypeOptions}"
+                                      SelectedItem="{Binding FormType,
+                                                     Mode=TwoWay}"
+                                      Style="{StaticResource InputComboStyle}"/>
+                        </StackPanel>
+
+                        <!-- Category -->
+                        <StackPanel>
+                            <TextBlock Text="CATEGORY"
+                                       Style="{StaticResource LabelTextStyle}"/>
+                            <ComboBox ItemsSource="{Binding CategoryOptions}"
+                                      SelectedItem="{Binding FormCategory,
+                                                     Mode=TwoWay}"
+                                      Style="{StaticResource InputComboStyle}"/>
+                        </StackPanel>
+
+                        <!-- Date -->
+                        <StackPanel>
+                            <TextBlock Text="DATE"
+                                       Style="{StaticResource LabelTextStyle}"/>
+                            <DatePicker SelectedDate="{Binding FormDate,
+                                                        Mode=TwoWay}"
+                                        Style="{StaticResource InputDateStyle}"/>
+                        </StackPanel>
+
+                        <!-- Note -->
+                        <StackPanel>
+                            <TextBlock Text="NOTE (optional)"
+                                       Style="{StaticResource LabelTextStyle}"/>
+                            <TextBox Text="{Binding FormNote,
+                                             UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource InputStyle}"
+                                     Height="70"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
+
+            </DockPanel>
+        </Border>
+
     </Grid>
 </UserControl>

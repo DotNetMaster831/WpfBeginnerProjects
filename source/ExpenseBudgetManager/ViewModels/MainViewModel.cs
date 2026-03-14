@@ -79,13 +79,25 @@ namespace ExpenseBudgetManager.ViewModels
                 new() { Label = "Settings",     IconKind = PackIconKind.Cog             }
             };
 
+            _transactionVM.TransactionsChanged += () =>
+            {
+                _dashboardVM.Refresh();
+                UpdateBalance();
+            };
+
             // Default view
             _currentView = _dashboardVM;
             _selectedNavItem = NavItems[0];
 
             _logger!.LogInformation("MainViewModel initialized.");
         }
-
+        // Add this method:
+        private void UpdateBalance()
+        {
+            // Will calculate properly once store is accessible
+            // For now trigger dashboard which recalculates
+            _logger!.LogInformation("Balance update triggered.");
+        }
         // ─────────────────────────────────────
         // Navigation logic
         // ─────────────────────────────────────
