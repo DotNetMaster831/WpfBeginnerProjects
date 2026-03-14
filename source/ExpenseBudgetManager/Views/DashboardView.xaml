@@ -5,21 +5,413 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ExpenseBudgetManager.Views"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:models="clr-namespace:ExpenseBudgetManager.Models"
+             xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <StackPanel HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-            <md:PackIcon Kind="ViewDashboard"
-                         Width="48" Height="48"
-                         Foreground="{StaticResource AccentBrush}"
-                         HorizontalAlignment="Center"/>
-            <TextBlock Text="Dashboard"
-                       Style="{StaticResource TitleTextStyle}"
-                       HorizontalAlignment="Center"/>
-            <TextBlock Text="Coming in Phase 5"
-                       Style="{StaticResource MutedTextStyle}"
-                       HorizontalAlignment="Center"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+
+            <!-- ═══ SUMMARY CARDS ═══ -->
+            <UniformGrid Rows="1" Columns="4" Margin="0,0,0,4">
+
+                <!-- Income Card -->
+                <Border Style="{StaticResource CardStyle}"
+                        Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="4"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Icon + Label row -->
+                        <DockPanel Grid.Row="0">
+                            <Border DockPanel.Dock="Right"
+                                    Width="36" Height="36"
+                                    CornerRadius="10"
+                                    Background="#1E3D1E">
+                                <md:PackIcon Kind="ArrowDownBold"
+                                             Width="18" Height="18"
+                                             Foreground="{StaticResource IncomeBrush}"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Total Income"
+                                       Style="{StaticResource LabelTextStyle}"
+                                       VerticalAlignment="Center"/>
+                        </DockPanel>
+
+                        <!-- Amount -->
+                        <TextBlock Grid.Row="2"
+                                   Text="{Binding TotalIncome,
+                                          StringFormat='₹{0:N2}'}"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource IncomeBrush}"/>
+
+                        <!-- Sub text -->
+                        <TextBlock Grid.Row="4"
+                                   Text="This month"
+                                   Style="{StaticResource MutedTextStyle}"
+                                   FontSize="11"/>
+                    </Grid>
+                </Border>
+
+                <!-- Expense Card -->
+                <Border Style="{StaticResource CardStyle}"
+                        Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="4"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <DockPanel Grid.Row="0">
+                            <Border DockPanel.Dock="Right"
+                                    Width="36" Height="36"
+                                    CornerRadius="10"
+                                    Background="#3D1E1E">
+                                <md:PackIcon Kind="ArrowUpBold"
+                                             Width="18" Height="18"
+                                             Foreground="{StaticResource ExpenseBrush}"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Total Expense"
+                                       Style="{StaticResource LabelTextStyle}"
+                                       VerticalAlignment="Center"/>
+                        </DockPanel>
+
+                        <TextBlock Grid.Row="2"
+                                   Text="{Binding TotalExpense,
+                                          StringFormat='₹{0:N2}'}"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource ExpenseBrush}"/>
+
+                        <TextBlock Grid.Row="4"
+                                   Text="This month"
+                                   Style="{StaticResource MutedTextStyle}"
+                                   FontSize="11"/>
+                    </Grid>
+                </Border>
+
+                <!-- Balance Card -->
+                <Border Style="{StaticResource CardStyle}"
+                        Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="4"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <DockPanel Grid.Row="0">
+                            <Border DockPanel.Dock="Right"
+                                    Width="36" Height="36"
+                                    CornerRadius="10"
+                                    Background="#1A2E3D">
+                                <md:PackIcon Kind="Wallet"
+                                             Width="18" Height="18"
+                                             Foreground="{StaticResource AccentBrush}"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Net Balance"
+                                       Style="{StaticResource LabelTextStyle}"
+                                       VerticalAlignment="Center"/>
+                        </DockPanel>
+
+                        <TextBlock Grid.Row="2"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Text="{Binding Balance,
+                                          StringFormat='₹{0:N2}'}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground"
+                                            Value="{StaticResource IncomeBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Balance,
+                                            Converter={StaticResource AmountToColor}}"
+                                                     Value="Negative">
+                                            <Setter Property="Foreground"
+                                                    Value="{StaticResource ExpenseBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <TextBlock Grid.Row="4"
+                                   Text="Income - Expenses"
+                                   Style="{StaticResource MutedTextStyle}"
+                                   FontSize="11"/>
+                    </Grid>
+                </Border>
+
+                <!-- Savings Rate Card -->
+                <Border Style="{StaticResource CardStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="4"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <DockPanel Grid.Row="0">
+                            <Border DockPanel.Dock="Right"
+                                    Width="36" Height="36"
+                                    CornerRadius="10"
+                                    Background="#2D3D1E">
+                                <md:PackIcon Kind="TrendingUp"
+                                             Width="18" Height="18"
+                                             Foreground="{StaticResource AccentBrush}"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Savings Rate"
+                                       Style="{StaticResource LabelTextStyle}"
+                                       VerticalAlignment="Center"/>
+                        </DockPanel>
+
+                        <TextBlock Grid.Row="2"
+                                   Text="{Binding SavingsRate,
+                                          StringFormat='{}{0:N1}%'}"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}"/>
+
+                        <!-- Mini progress bar -->
+                        <ProgressBar Grid.Row="4"
+                                     Style="{StaticResource BudgetProgressStyle}"
+                                     Value="{Binding SavingsRate}"
+                                     Maximum="100"/>
+
+                        <TextBlock Grid.Row="6"
+                                   Text="Of income saved"
+                                   Style="{StaticResource MutedTextStyle}"
+                                   FontSize="11"/>
+                    </Grid>
+                </Border>
+
+            </UniformGrid>
+
+            <!-- ═══ CHART ═══ -->
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+
+                    <!-- Chart header -->
+                    <DockPanel Margin="0,0,0,16">
+                        <StackPanel DockPanel.Dock="Left">
+                            <TextBlock Text="Income vs Expense"
+                                       Style="{StaticResource SubtitleTextStyle}"
+                                       FontSize="16"/>
+                            <TextBlock Text="Last 6 months"
+                                       Style="{StaticResource MutedTextStyle}"
+                                       FontSize="11"/>
+                        </StackPanel>
+
+                        <!-- Current month highlight badge -->
+                        <Border DockPanel.Dock="Right"
+                                Background="{StaticResource CardHoverBrush}"
+                                CornerRadius="{StaticResource PillRadius}"
+                                Padding="12,5"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{Binding MonthDisplay}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       FontWeight="SemiBold"/>
+                        </Border>
+                    </DockPanel>
+
+                    <!-- OxyPlot chart -->
+                    <oxy:PlotView Model="{Binding IncomeExpenseChart}"
+                                  Height="220"
+                                  Background="Transparent"
+                                  BorderThickness="0"/>
+
+                    <!-- Legend hint row -->
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="0,12,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="12" Height="12"
+                                    Background="{StaticResource IncomeBrush}"
+                                    CornerRadius="2"/>
+                            <TextBlock Text="Income"
+                                       FontSize="11"
+                                       Foreground="{StaticResource TextMutedBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="12" Height="12"
+                                    Background="{StaticResource ExpenseBrush}"
+                                    CornerRadius="2"/>
+                            <TextBlock Text="Expense"
+                                       FontSize="11"
+                                       Foreground="{StaticResource TextMutedBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+            
+            <!-- ═══ RECENT TRANSACTIONS ═══ -->
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+
+                    <!-- Section header -->
+                    <DockPanel Margin="0,0,0,16">
+                        <TextBlock Text="Recent Transactions"
+                                   Style="{StaticResource SubtitleTextStyle}"
+                                   FontSize="16"/>
+                        <Button DockPanel.Dock="Right"
+                                Content="See All →"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Padding="10,5"
+                                FontSize="12"/>
+                    </DockPanel>
+
+                    <!-- Empty state -->
+                    <StackPanel Visibility="{Binding HasTransactions,
+                                    Converter={StaticResource NullToVisibility}}"
+                                HorizontalAlignment="Center"
+                                Margin="0,30">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasTransactions}"
+                                                 Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <md:PackIcon Kind="InboxOutline"
+                                     Width="48" Height="48"
+                                     Foreground="{StaticResource TextMutedBrush}"
+                                     HorizontalAlignment="Center"/>
+                        <TextBlock Text="No transactions yet"
+                                   Style="{StaticResource MutedTextStyle}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,8,0,4"/>
+                        <TextBlock Text="Add your first transaction in the Transactions tab"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Transaction list -->
+                    <ItemsControl ItemsSource="{Binding RecentTransactions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:Transaction}">
+                                <Border Padding="4,10"
+                                        BorderBrush="{StaticResource DividerBrush}"
+                                        BorderThickness="0,0,0,1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="100"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Type icon bubble -->
+                                        <Border Grid.Column="0"
+                                                Width="32" Height="32"
+                                                CornerRadius="16"
+                                                VerticalAlignment="Center">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#1E3D1E"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Type}"
+                                                                     Value="Expense">
+                                                            <Setter Property="Background"
+                                                                    Value="#3D1E1E"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <md:PackIcon Width="16" Height="16"
+                                                         HorizontalAlignment="Center"
+                                                         VerticalAlignment="Center">
+                                                <md:PackIcon.Style>
+                                                    <Style TargetType="md:PackIcon">
+                                                        <Setter Property="Kind"
+                                                                Value="ArrowDownBold"/>
+                                                        <Setter Property="Foreground"
+                                                                Value="{StaticResource IncomeBrush}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Type}"
+                                                                         Value="Expense">
+                                                                <Setter Property="Kind"
+                                                                        Value="ArrowUpBold"/>
+                                                                <Setter Property="Foreground"
+                                                                        Value="{StaticResource ExpenseBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </md:PackIcon.Style>
+                                            </md:PackIcon>
+                                        </Border>
+
+                                        <!-- Title + category -->
+                                        <StackPanel Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    Margin="10,0">
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding Category}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
+
+                                        <!-- Amount -->
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding AmountDisplay}"
+                                                   FontWeight="Bold"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,16,0"
+                                                   Foreground="{Binding Type,
+                                                       Converter={StaticResource TypeToColor}}"/>
+
+                                        <!-- Date -->
+                                        <TextBlock Grid.Column="3"
+                                                   Text="{Binding Date,
+                                                          StringFormat='dd MMM yyyy'}"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </StackPanel>
+            </Border>
+
         </StackPanel>
-    </Grid>
+    </ScrollViewer>
 </UserControl>

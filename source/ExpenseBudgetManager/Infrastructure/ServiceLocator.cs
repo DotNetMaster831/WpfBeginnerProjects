@@ -13,6 +13,7 @@ namespace ExpenseBudgetManager.Infrastructure
     {
         private static ILoggerService? _logger;
         private static IStorageService? _storage;
+        private static ITransactionStore? _transactionStore;
 
         public static ILoggerService Logger
             => _logger ??= new SerilogLoggerService();
@@ -20,11 +21,15 @@ namespace ExpenseBudgetManager.Infrastructure
         public static IStorageService Storage
             => _storage ??= new JsonStorageService(Logger);
 
+        public static ITransactionStore TransactionStore
+            => _transactionStore ??= new JsonTransactionStore(Storage, Logger);
+
         public static void Initialize()
         {
             // Force creation and log startup
             Logger.LogInformation("ServiceLocator initialized.");
             Logger.LogInformation($"Storage ready: {Storage.GetType().Name}");
+            Logger.LogInformation($"TransactionStore: {TransactionStore.GetType().Name}");
         }
     }
 }
